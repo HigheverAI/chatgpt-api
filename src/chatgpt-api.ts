@@ -14,6 +14,8 @@ const USER_LABEL_DEFAULT = 'User'
 const ASSISTANT_LABEL_DEFAULT = 'ChatGPT'
 
 export class ChatGPTAPI {
+  protected _customHeader: { [key: string]: string }
+  protected _customUrl: string
   protected _apiKey: string
   protected _apiBaseUrl: string
   protected _debug: boolean
@@ -58,9 +60,13 @@ export class ChatGPTAPI {
       maxResponseTokens = 1000,
       getMessageById,
       upsertMessage,
-      fetch = globalFetch
+      fetch = globalFetch,
+      customHeader = {},
+      customUrl
     } = opts
 
+    this._customHeader = customHeader
+    this._customUrl = customUrl
     this._apiKey = apiKey
     this._apiBaseUrl = apiBaseUrl
     this._debug = !!debug
@@ -172,10 +178,12 @@ export class ChatGPTAPI {
 
     const responseP = new Promise<types.ChatMessage>(
       async (resolve, reject) => {
-        const url = `${this._apiBaseUrl}/chat/completions`
+        const url = this._customUrl ?? `${this._apiBaseUrl}/chat/completions`
+        // const url = `${this._apiBaseUrl}/chat/completions`
         const headers = {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this._apiKey}`
+          Authorization: `Bearer ${this._apiKey}`,
+          ...this._customHeader
         }
         const body = {
           max_tokens: maxTokens,

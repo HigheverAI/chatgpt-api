@@ -112,8 +112,12 @@ var ChatGPTAPI = class {
       maxResponseTokens = 1e3,
       getMessageById,
       upsertMessage,
-      fetch: fetch2 = fetch
+      fetch: fetch2 = fetch,
+      customHeader = {},
+      customUrl
     } = opts;
+    this._customHeader = customHeader;
+    this._customUrl = customUrl;
     this._apiKey = apiKey;
     this._apiBaseUrl = apiBaseUrl;
     this._debug = !!debug;
@@ -209,10 +213,11 @@ Current date: ${currentDate}`;
     const responseP = new Promise(
       async (resolve, reject) => {
         var _a, _b;
-        const url = `${this._apiBaseUrl}/chat/completions`;
+        const url = this._customUrl ?? `${this._apiBaseUrl}/chat/completions`;
         const headers = {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this._apiKey}`
+          Authorization: `Bearer ${this._apiKey}`,
+          ...this._customHeader
         };
         const body = {
           max_tokens: maxTokens,

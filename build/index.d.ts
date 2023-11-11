@@ -18,6 +18,10 @@ type ChatGPTAPIOptions = {
     getMessageById?: GetMessageByIdFunction;
     upsertMessage?: UpsertMessageFunction;
     fetch?: FetchFn;
+    customHeader?: {
+        [key: string]: any;
+    };
+    customUrl?: string;
 };
 type SendMessageOptions = {
     /** The name of a user in a multi-user chat. */
@@ -387,6 +391,10 @@ declare namespace openai {
 }
 
 declare class ChatGPTAPI {
+    protected _customHeader: {
+        [key: string]: string;
+    };
+    protected _customUrl: string;
     protected _apiKey: string;
     protected _apiBaseUrl: string;
     protected _debug: boolean;

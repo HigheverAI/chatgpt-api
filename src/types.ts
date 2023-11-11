@@ -30,6 +30,9 @@ export type ChatGPTAPIOptions = {
   upsertMessage?: UpsertMessageFunction
 
   fetch?: FetchFn
+
+  customHeader?: { [key: string]: any }
+  customUrl?: string
 }
 
 export type SendMessageOptions = {
