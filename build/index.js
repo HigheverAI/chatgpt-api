@@ -114,8 +114,10 @@ var ChatGPTAPI = class {
       upsertMessage,
       fetch: fetch2 = fetch,
       customHeader = {},
-      customUrl
+      customUrl,
+      customMessages = []
     } = opts;
+    this._customMessages = customMessages;
     this._customHeader = customHeader;
     this._customUrl = customUrl;
     this._apiKey = apiKey;
@@ -336,7 +338,7 @@ Current date: ${currentDate}`;
     this._apiKey = apiKey;
   }
   async _buildMessages(text, opts) {
-    const { systemMessage = this._systemMessage } = opts;
+    const { systemMessage = this._systemMessage, customMessages = this._customMessages } = opts;
     let { parentMessageId } = opts;
     const userLabel = USER_LABEL_DEFAULT;
     const assistantLabel = ASSISTANT_LABEL_DEFAULT;
@@ -347,6 +349,9 @@ Current date: ${currentDate}`;
         role: "system",
         content: systemMessage
       });
+    }
+    if (customMessages) {
+      messages.push(...customMessages);
     }
     const systemMessageOffset = messages.length;
     let nextMessages = text ? messages.concat([

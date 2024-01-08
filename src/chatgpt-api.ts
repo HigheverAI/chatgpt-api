@@ -20,6 +20,7 @@ export class ChatGPTAPI {
   protected _apiBaseUrl: string
   protected _debug: boolean
 
+  protected _customMessages: types.openai.ChatCompletionRequestMessage[] // 添加此行来定义 customMessages 存储
   protected _systemMessage: string
   protected _completionParams: Omit<
     types.openai.CreateChatCompletionRequest,
@@ -62,9 +63,11 @@ export class ChatGPTAPI {
       upsertMessage,
       fetch = globalFetch,
       customHeader = {},
-      customUrl
+      customUrl,
+      customMessages = []
     } = opts
 
+    this._customMessages = customMessages; // 添加此行来初始化 customMessages
     this._customHeader = customHeader
     this._customUrl = customUrl
     this._apiKey = apiKey
@@ -325,7 +328,7 @@ export class ChatGPTAPI {
   }
 
   protected async _buildMessages(text: string, opts: types.SendMessageOptions) {
-    const { systemMessage = this._systemMessage } = opts
+    const { systemMessage = this._systemMessage, customMessages = this._customMessages } = opts
     let { parentMessageId } = opts
 
     const userLabel = USER_LABEL_DEFAULT
@@ -339,6 +342,10 @@ export class ChatGPTAPI {
         role: 'system',
         content: systemMessage
       })
+    }
+
+    if (customMessages) {
+      messages.push(...customMessages);
     }
 
     const systemMessageOffset = messages.length

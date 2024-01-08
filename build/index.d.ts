@@ -22,6 +22,7 @@ type ChatGPTAPIOptions = {
         [key: string]: any;
     };
     customUrl?: string;
+    customMessages?: openai.ChatCompletionRequestMessage[];
 };
 type SendMessageOptions = {
     /** The name of a user in a multi-user chat. */
@@ -34,6 +35,7 @@ type SendMessageOptions = {
     onProgress?: (partialResponse: ChatMessage) => void;
     abortSignal?: AbortSignal;
     completionParams?: Partial<Omit<openai.CreateChatCompletionRequest, 'messages' | 'n' | 'stream'>>;
+    customMessages?: openai.ChatCompletionRequestMessage[];
 };
 type MessageActionType = 'next' | 'variant';
 type SendMessageBrowserOptions = {
@@ -398,6 +400,7 @@ declare class ChatGPTAPI {
     protected _apiKey: string;
     protected _apiBaseUrl: string;
     protected _debug: boolean;
+    protected _customMessages: openai.ChatCompletionRequestMessage[];
     protected _systemMessage: string;
     protected _completionParams: Omit<openai.CreateChatCompletionRequest, 'messages' | 'n'>;
     protected _maxModelTokens: number;

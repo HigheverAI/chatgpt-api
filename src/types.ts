@@ -33,6 +33,7 @@ export type ChatGPTAPIOptions = {
 
   customHeader?: { [key: string]: any }
   customUrl?: string
+  customMessages?: openai.ChatCompletionRequestMessage[]
 }
 
 export type SendMessageOptions = {
@@ -48,6 +49,8 @@ export type SendMessageOptions = {
   completionParams?: Partial<
     Omit<openai.CreateChatCompletionRequest, 'messages' | 'n' | 'stream'>
   >
+
+  customMessages?: openai.ChatCompletionRequestMessage[]
 }
 
 export type MessageActionType = 'next' | 'variant'
