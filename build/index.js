@@ -134,8 +134,8 @@ var ChatGPTAPI = class {
     this._systemMessage = systemMessage;
     if (this._systemMessage === void 0) {
       const currentDate = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
-      this._systemMessage = `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.
-Knowledge cutoff: 2021-09-01
+      this._systemMessage = `You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture.
+Knowledge cutoff: 2023-04
 Current date: ${currentDate}`;
     }
     this._maxModelTokens = maxModelTokens;
