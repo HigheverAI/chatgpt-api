@@ -148,7 +148,9 @@ export class ChatGPTAPI {
       timeoutMs,
       onProgress,
       stream = onProgress ? true : false,
-      completionParams
+      completionParams,
+      onTransform,
+      onCustomProgress,
     } = opts
 
     let { abortSignal } = opts
@@ -195,7 +197,7 @@ export class ChatGPTAPI {
           messages,
           stream
         }
-
+        onTransform?.(headers, body)
         if (this._debug) {
           console.log(`sendMessage (${numTokens} tokens)`, body)
         }
@@ -209,34 +211,43 @@ export class ChatGPTAPI {
               body: JSON.stringify(body),
               signal: abortSignal,
               onMessage: (data: string) => {
-                if (data === '[DONE]') {
-                  result.text = result.text.trim()
-                  return resolve(result)
-                }
-
-                try {
-                  const response: types.openai.CreateChatCompletionDeltaResponse =
-                    JSON.parse(data)
-
-                  if (response.id) {
-                    result.id = response.id
+                if (onCustomProgress) {
+									try {
+										onCustomProgress(JSON.parse(data), result, resolve)
+									} catch (err) {
+										console.warn("Custom stream SEE event unexpected error", err);
+										return reject(err);
+									}
+								} else {
+                  if (data === '[DONE]') {
+                    result.text = result.text.trim()
+                    return resolve(result)
                   }
-
-                  if (response?.choices?.length) {
-                    const delta = response.choices[0].delta
-                    result.delta = delta.content
-                    if (delta?.content) result.text += delta.content
-                    result.detail = response
-
-                    if (delta.role) {
-                      result.role = delta.role
+  
+                  try {
+                    const response: types.openai.CreateChatCompletionDeltaResponse =
+                      JSON.parse(data)
+  
+                    if (response.id) {
+                      result.id = response.id
                     }
-
-                    onProgress?.(result)
+  
+                    if (response?.choices?.length) {
+                      const delta = response.choices[0].delta
+                      result.delta = delta.content
+                      if (delta?.content) result.text += delta.content
+                      result.detail = response
+  
+                      if (delta.role) {
+                        result.role = delta.role
+                      }
+  
+                      onProgress?.(result)
+                    }
+                  } catch (err) {
+                    console.warn('OpenAI stream SEE event unexpected error', err)
+                    return reject(err)
                   }
-                } catch (err) {
-                  console.warn('OpenAI stream SEE event unexpected error', err)
-                  return reject(err)
                 }
               }
             },

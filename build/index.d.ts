@@ -36,6 +36,8 @@ type SendMessageOptions = {
     abortSignal?: AbortSignal;
     completionParams?: Partial<Omit<openai.CreateChatCompletionRequest, 'messages' | 'n' | 'stream'>>;
     customMessages?: openai.ChatCompletionRequestMessage[];
+    onCustomProgress?: (data: any, result: any, resolve: any) => void;
+    onTransform?: (header: any, body: any) => void;
 };
 type MessageActionType = 'next' | 'variant';
 type SendMessageBrowserOptions = {

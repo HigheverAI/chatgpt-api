@@ -187,7 +187,9 @@ Current date: ${currentDate}`;
       timeoutMs,
       onProgress,
       stream = onProgress ? true : false,
-      completionParams
+      completionParams,
+      onTransform,
+      onCustomProgress
     } = opts;
     let { abortSignal } = opts;
     let abortController = null;
@@ -228,6 +230,7 @@ Current date: ${currentDate}`;
           messages,
           stream
         };
+        onTransform == null ? void 0 : onTransform(headers, body);
         if (this._debug) {
           console.log(`sendMessage (${numTokens} tokens)`, body);
         }
@@ -241,29 +244,38 @@ Current date: ${currentDate}`;
               signal: abortSignal,
               onMessage: (data) => {
                 var _a2;
-                if (data === "[DONE]") {
-                  result.text = result.text.trim();
-                  return resolve(result);
-                }
-                try {
-                  const response = JSON.parse(data);
-                  if (response.id) {
-                    result.id = response.id;
+                if (onCustomProgress) {
+                  try {
+                    onCustomProgress(JSON.parse(data), result, resolve);
+                  } catch (err) {
+                    console.warn("Custom stream SEE event unexpected error", err);
+                    return reject(err);
                   }
-                  if ((_a2 = response == null ? void 0 : response.choices) == null ? void 0 : _a2.length) {
-                    const delta = response.choices[0].delta;
-                    result.delta = delta.content;
-                    if (delta == null ? void 0 : delta.content)
-                      result.text += delta.content;
-                    result.detail = response;
-                    if (delta.role) {
-                      result.role = delta.role;
+                } else {
+                  if (data === "[DONE]") {
+                    result.text = result.text.trim();
+                    return resolve(result);
+                  }
+                  try {
+                    const response = JSON.parse(data);
+                    if (response.id) {
+                      result.id = response.id;
                     }
-                    onProgress == null ? void 0 : onProgress(result);
+                    if ((_a2 = response == null ? void 0 : response.choices) == null ? void 0 : _a2.length) {
+                      const delta = response.choices[0].delta;
+                      result.delta = delta.content;
+                      if (delta == null ? void 0 : delta.content)
+                        result.text += delta.content;
+                      result.detail = response;
+                      if (delta.role) {
+                        result.role = delta.role;
+                      }
+                      onProgress == null ? void 0 : onProgress(result);
+                    }
+                  } catch (err) {
+                    console.warn("OpenAI stream SEE event unexpected error", err);
+                    return reject(err);
                   }
-                } catch (err) {
-                  console.warn("OpenAI stream SEE event unexpected error", err);
-                  return reject(err);
                 }
               }
             },
