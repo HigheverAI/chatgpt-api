@@ -189,7 +189,9 @@ Current date: ${currentDate}`;
       stream = onProgress ? true : false,
       completionParams,
       onTransform,
-      onCustomProgress
+      onCustomProgress,
+      onCustomResUpsertMessage,
+      onCustomContentFilter
     } = opts;
     let { abortSignal } = opts;
     let abortController = null;
@@ -203,10 +205,15 @@ Current date: ${currentDate}`;
       parentMessageId,
       text
     };
-    await this._upsertMessage(message);
+    if (onCustomResUpsertMessage) {
+      await onCustomResUpsertMessage(message, this._messageStore);
+    } else {
+      await this._upsertMessage(message);
+    }
     const { messages, maxTokens, numTokens } = await this._buildMessages(
       text,
-      opts
+      opts,
+      onCustomContentFilter
     );
     const result = {
       role: "assistant",
@@ -349,7 +356,7 @@ Current date: ${currentDate}`;
   set apiKey(apiKey) {
     this._apiKey = apiKey;
   }
-  async _buildMessages(text, opts) {
+  async _buildMessages(text, opts, onCustomContentFilter) {
     const { systemMessage = this._systemMessage, customMessages = this._customMessages } = opts;
     let { parentMessageId } = opts;
     const userLabel = USER_LABEL_DEFAULT;
@@ -376,16 +383,21 @@ Current date: ${currentDate}`;
     let numTokens = 0;
     do {
       const prompt = nextMessages.reduce((prompt2, message) => {
-        switch (message.role) {
-          case "system":
-            return prompt2.concat([`Instructions:
+        const customResult = onCustomContentFilter ? onCustomContentFilter(message) : null;
+        if (customResult !== null) {
+          return prompt2.concat(customResult);
+        } else {
+          switch (message.role) {
+            case "system":
+              return prompt2.concat([`Instructions:
 ${message.content}`]);
-          case "user":
-            return prompt2.concat([`${userLabel}:
+            case "user":
+              return prompt2.concat([`${userLabel}:
 ${message.content}`]);
-          default:
-            return prompt2.concat([`${assistantLabel}:
+            default:
+              return prompt2.concat([`${assistantLabel}:
 ${message.content}`]);
+          }
         }
       }, []).join("\n\n");
       const nextNumTokensEstimate = await this._getTokenCount(prompt);

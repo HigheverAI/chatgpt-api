@@ -151,6 +151,8 @@ export class ChatGPTAPI {
       completionParams,
       onTransform,
       onCustomProgress,
+      onCustomResUpsertMessage,
+      onCustomContentFilter
     } = opts
 
     let { abortSignal } = opts
@@ -167,11 +169,16 @@ export class ChatGPTAPI {
       parentMessageId,
       text
     }
-    await this._upsertMessage(message)
+		if (onCustomResUpsertMessage) {
+			await onCustomResUpsertMessage(message, this._messageStore);
+		} else {
+			await this._upsertMessage(message);
+		}
 
     const { messages, maxTokens, numTokens } = await this._buildMessages(
       text,
-      opts
+      opts,
+      onCustomContentFilter
     )
 
     const result: types.ChatMessage = {
@@ -338,7 +345,7 @@ export class ChatGPTAPI {
     this._apiKey = apiKey
   }
 
-  protected async _buildMessages(text: string, opts: types.SendMessageOptions) {
+  protected async _buildMessages(text: string, opts: types.SendMessageOptions, onCustomContentFilter: any) {
     const { systemMessage = this._systemMessage, customMessages = this._customMessages } = opts
     let { parentMessageId } = opts
 
@@ -374,13 +381,18 @@ export class ChatGPTAPI {
     do {
       const prompt = nextMessages
         .reduce((prompt, message) => {
-          switch (message.role) {
-            case 'system':
-              return prompt.concat([`Instructions:\n${message.content}`])
-            case 'user':
-              return prompt.concat([`${userLabel}:\n${message.content}`])
-            default:
-              return prompt.concat([`${assistantLabel}:\n${message.content}`])
+          const customResult = onCustomContentFilter ? onCustomContentFilter(message) : null;
+          if (customResult !== null) { // 有自定义结果，直接使用
+            return prompt.concat(customResult);
+          } else {
+            switch (message.role) {
+              case 'system':
+                return prompt.concat([`Instructions:\n${message.content}`])
+              case 'user':
+                return prompt.concat([`${userLabel}:\n${message.content}`])
+              default:
+                return prompt.concat([`${assistantLabel}:\n${message.content}`])
+            }
           }
         }, [] as string[])
         .join('\n\n')

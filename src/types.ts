@@ -53,6 +53,8 @@ export type SendMessageOptions = {
   customMessages?: openai.ChatCompletionRequestMessage[]
   onCustomProgress?: (data: any, result: any, resolve: any) => void
   onTransform?: (header: any, body: any) => void
+  onCustomResUpsertMessage?: (message: ChatMessage, body: Keyv<ChatMessage>) => void
+  onCustomContentFilter?: (message: any) => string[] | null
 }
 
 export type MessageActionType = 'next' | 'variant'

@@ -38,6 +38,8 @@ type SendMessageOptions = {
     customMessages?: openai.ChatCompletionRequestMessage[];
     onCustomProgress?: (data: any, result: any, resolve: any) => void;
     onTransform?: (header: any, body: any) => void;
+    onCustomResUpsertMessage?: (message: ChatMessage, body: Keyv<ChatMessage>) => void;
+    onCustomContentFilter?: (message: any) => string[] | null;
 };
 type MessageActionType = 'next' | 'variant';
 type SendMessageBrowserOptions = {
@@ -450,7 +452,7 @@ declare class ChatGPTAPI {
     sendMessage(text: string, opts?: SendMessageOptions): Promise<ChatMessage>;
     get apiKey(): string;
     set apiKey(apiKey: string);
-    protected _buildMessages(text: string, opts: SendMessageOptions): Promise<{
+    protected _buildMessages(text: string, opts: SendMessageOptions, onCustomContentFilter: any): Promise<{
         messages: openai.ChatCompletionRequestMessage[];
         maxTokens: number;
         numTokens: number;
