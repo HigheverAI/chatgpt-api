@@ -33,6 +33,7 @@ export async function fetchSSE(
     }
   })
 
+  const decoder = new TextDecoder()
   if (!res.body.getReader) {
     // Vercel polyfills `fetch` with `node-fetch`, which doesn't conform to
     // web standards, so this is a workaround...
@@ -45,7 +46,12 @@ export async function fetchSSE(
     body.on('readable', () => {
       let chunk: string | Buffer
       while (null !== (chunk = body.read())) {
-        parser.feed(chunk.toString())
+        if (typeof chunk === 'string') {
+          parser.feed(chunk.toString())
+        } else {
+          const str = decoder.decode(chunk, { stream: true })
+          parser.feed(str)
+        }
       }
     })
   } else {
