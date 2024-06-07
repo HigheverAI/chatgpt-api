@@ -53,7 +53,10 @@ export type SendMessageOptions = {
   customMessages?: openai.ChatCompletionRequestMessage[]
   onCustomProgress?: (data: any, result: any, resolve: any) => void
   onTransform?: (header: any, body: any) => void
-  onCustomResUpsertMessage?: (message: ChatMessage, body: Keyv<ChatMessage>) => void
+  onCustomResUpsertMessage?: (
+    message: ChatMessage,
+    body: Keyv<ChatMessage>
+  ) => void
   onCustomContentFilter?: (message: any) => string[] | null
 }
 
@@ -302,6 +305,12 @@ export namespace openai {
      */
     stream?: boolean | null
     /**
+     * Options for streaming response. Only set this when you set stream: true.
+     * @type {CreateChatCompletionRequestStreamOptions}
+     * @memberof CreateChatCompletionRequest
+     */
+    stream_options?: CreateChatCompletionRequestStreamOptions | null
+    /**
      *
      * @type {CreateChatCompletionRequestStop}
      * @memberof CreateChatCompletionRequest
@@ -436,5 +445,13 @@ export namespace openai {
      * @memberof CreateCompletionResponseUsage
      */
     total_tokens: number
+  }
+  export interface CreateChatCompletionRequestStreamOptions {
+    /**
+     *
+     * @type {boolean}
+     * @memberof CreateChatCompletionRequestStreamOptions
+     */
+    include_usage: boolean
   }
 }
