@@ -67,7 +67,7 @@ export class ChatGPTAPI {
       customMessages = []
     } = opts
 
-    this._customMessages = customMessages; // 添加此行来初始化 customMessages
+    this._customMessages = customMessages // 添加此行来初始化 customMessages
     this._customHeader = customHeader
     this._customUrl = customUrl
     this._apiKey = apiKey
@@ -169,11 +169,11 @@ export class ChatGPTAPI {
       parentMessageId,
       text
     }
-		if (onCustomResUpsertMessage) {
-			await onCustomResUpsertMessage(message, this._messageStore);
-		} else {
-			await this._upsertMessage(message);
-		}
+    if (onCustomResUpsertMessage) {
+      await onCustomResUpsertMessage(message, this._messageStore)
+    } else {
+      await this._upsertMessage(message)
+    }
 
     const { messages, maxTokens, numTokens } = await this._buildMessages(
       text,
@@ -219,40 +219,51 @@ export class ChatGPTAPI {
               signal: abortSignal,
               onMessage: (data: string) => {
                 if (onCustomProgress) {
-									try {
-										onCustomProgress(JSON.parse(data), result, resolve)
-									} catch (err) {
-										console.warn("Custom stream SEE event unexpected error", err);
-										return reject(err);
-									}
-								} else {
+                  try {
+                    onCustomProgress(JSON.parse(data), result, resolve)
+                  } catch (err) {
+                    console.warn(
+                      'Custom stream SEE event unexpected error',
+                      err
+                    )
+                    return reject(err)
+                  }
+                } else {
                   if (data === '[DONE]') {
                     result.text = result.text.trim()
                     return resolve(result)
                   }
-  
+
                   try {
                     const response: types.openai.CreateChatCompletionDeltaResponse =
                       JSON.parse(data)
-  
+
                     if (response.id) {
                       result.id = response.id
                     }
-  
+
                     if (response?.choices?.length) {
                       const delta = response.choices[0].delta
                       result.delta = delta.content
                       if (delta?.content) result.text += delta.content
                       result.detail = response
-  
+
                       if (delta.role) {
                         result.role = delta.role
                       }
-  
+
+                      onProgress?.(result)
+                    }
+
+                    if (response.usage && result.detail) {
+                      result.detail.usage = response.usage
                       onProgress?.(result)
                     }
                   } catch (err) {
-                    console.warn('OpenAI stream SEE event unexpected error', err)
+                    console.warn(
+                      'OpenAI stream SEE event unexpected error',
+                      err
+                    )
                     return reject(err)
                   }
                 }
@@ -345,8 +356,15 @@ export class ChatGPTAPI {
     this._apiKey = apiKey
   }
 
-  protected async _buildMessages(text: string, opts: types.SendMessageOptions, onCustomContentFilter: any) {
-    const { systemMessage = this._systemMessage, customMessages = this._customMessages } = opts
+  protected async _buildMessages(
+    text: string,
+    opts: types.SendMessageOptions,
+    onCustomContentFilter: any
+  ) {
+    const {
+      systemMessage = this._systemMessage,
+      customMessages = this._customMessages
+    } = opts
     let { parentMessageId } = opts
 
     const userLabel = USER_LABEL_DEFAULT
@@ -363,7 +381,7 @@ export class ChatGPTAPI {
     }
 
     if (customMessages) {
-      messages.push(...customMessages);
+      messages.push(...customMessages)
     }
 
     const systemMessageOffset = messages.length
@@ -381,9 +399,12 @@ export class ChatGPTAPI {
     do {
       const prompt = nextMessages
         .reduce((prompt, message) => {
-          const customResult = onCustomContentFilter ? onCustomContentFilter(message) : null;
-          if (customResult !== null) { // 有自定义结果，直接使用
-            return prompt.concat(customResult);
+          const customResult = onCustomContentFilter
+            ? onCustomContentFilter(message)
+            : null
+          if (customResult !== null) {
+            // 有自定义结果，直接使用
+            return prompt.concat(customResult)
           } else {
             switch (message.role) {
               case 'system':

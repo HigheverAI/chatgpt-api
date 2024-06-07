@@ -285,6 +285,10 @@ Current date: ${currentDate}`;
                       }
                       onProgress == null ? void 0 : onProgress(result);
                     }
+                    if (response.usage && result.detail) {
+                      result.detail.usage = response.usage;
+                      onProgress == null ? void 0 : onProgress(result);
+                    }
                   } catch (err) {
                     console.warn("OpenAI stream SEE event unexpected error", err);
                     return reject(err);

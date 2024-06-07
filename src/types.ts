@@ -202,6 +202,7 @@ export namespace openai {
         finish_reason: string | null
       }
     ]
+    usage?: CreateCompletionResponseUsage
   }
 
   /**
