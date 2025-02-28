@@ -257,11 +257,15 @@ Current date: ${currentDate}`;
               signal: abortSignal,
               onMessage: (data) => {
                 var _a2;
+                data = data.trim();
                 if (onCustomProgress) {
                   try {
                     onCustomProgress(JSON.parse(data), result, resolve);
                   } catch (err) {
-                    console.warn("Custom stream SEE event unexpected error", err);
+                    console.warn(
+                      "Custom stream SEE event unexpected error",
+                      err
+                    );
                     return reject(err);
                   }
                 } else {
@@ -290,7 +294,10 @@ Current date: ${currentDate}`;
                       onProgress == null ? void 0 : onProgress(result);
                     }
                   } catch (err) {
-                    console.warn("OpenAI stream SEE event unexpected error", err);
+                    console.warn(
+                      "OpenAI stream SEE event unexpected error",
+                      err
+                    );
                     return reject(err);
                   }
                 }
@@ -367,7 +374,10 @@ Current date: ${currentDate}`;
     this._apiKey = apiKey;
   }
   async _buildMessages(text, opts, onCustomContentFilter) {
-    const { systemMessage = this._systemMessage, customMessages = this._customMessages } = opts;
+    const {
+      systemMessage = this._systemMessage,
+      customMessages = this._customMessages
+    } = opts;
     let { parentMessageId } = opts;
     const userLabel = USER_LABEL_DEFAULT;
     const assistantLabel = ASSISTANT_LABEL_DEFAULT;
