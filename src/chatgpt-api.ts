@@ -218,6 +218,7 @@ export class ChatGPTAPI {
               body: JSON.stringify(body),
               signal: abortSignal,
               onMessage: (data: string) => {
+                data = data.trim();
                 if (onCustomProgress) {
                   try {
                     onCustomProgress(JSON.parse(data), result, resolve)
